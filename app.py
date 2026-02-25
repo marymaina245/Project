@@ -16,15 +16,22 @@ model, tokenizer = load_resources()
 
 # ---------- Settings ----------
 MAX_LEN = 100  # same value used during training
-emotion_labels = ['joy', 'sadness', 'anger', 'fear', 'love', 'surprise']
+emotion_labels = ['anger','fear','joy','love','sadness','surprise']
 
 # ---------- Prediction function ----------
 def predict_emotion(text):
     if not text.strip():
         return None
+
     sequence = tokenizer.texts_to_sequences([text])
     padded = pad_sequences(sequence, maxlen=MAX_LEN)
+
     prediction = model.predict(padded)
+
+    # 🔎 DEBUG — show what model outputs
+    st.write("Prediction probabilities:", prediction)
+    st.write("Predicted index:", np.argmax(prediction))
+
     return emotion_labels[np.argmax(prediction)]
 
 # ---------- UI ----------
@@ -39,3 +46,4 @@ if st.button("Classify Emotion"):
         st.warning("Please enter text")
     else:
         st.success(f"Predicted Emotion: {result}")
+
