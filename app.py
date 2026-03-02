@@ -16,9 +16,13 @@ labels = ["anger", "fear", "joy", "love", "sadness", "surprise"]
 # 3️⃣ prediction function (IMPORTANT — define before UI)
 def predict(text):
     seq = tokenizer.texts_to_sequences([text])
-    pad = pad_sequences(seq, maxlen=max_len)
+    st.write("Tokenized:", seq)
 
+    pad = pad_sequences(seq, maxlen=max_len)
     probs = model.predict(pad)[0]
+
+    st.write("Probabilities:", probs)
+
     idx = probs.argmax()
 
     emotion = labels[idx]
@@ -58,6 +62,7 @@ if st.button("Analyze Emotional State"):
         st.error("⚠️ Possible emotional distress — consider follow-up")
 
 st.warning("This AI supports clinicians and does not replace professional judgement.")
+
 
 
 
