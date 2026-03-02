@@ -1,49 +1,62 @@
-import numpy as np
-import pickle
+# 1️⃣ imports
 import streamlit as st
+import pickle
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-# ---------- Load model & tokenizer (cached for speed) ----------
-@st.cache_resource
-def load_resources():
-    model = load_model("emotion_cnn_model.keras")
-    with open("tokenizer.pkl", "rb") as f:
-        tokenizer = pickle.load(f)
-    return model, tokenizer
 
-model, tokenizer = load_resources()
+# 2️⃣ load model + tokenizer (top of file)
+model = load_model("model.h5")
+tokenizer = pickle.load(open("tokenizer.pkl", "rb"))
+label_encoder = pickle.load(open("label_encoder.pkl", "rb"))
 
-# ---------- Settings ----------
-MAX_LEN = 100  # same value used during training
-emotion_labels = ['anger','fear','joy','love','sadness','surprise']
+max_len = 100   # same value used in training
 
-# ---------- Prediction function ----------
-def predict_emotion(text):
-    if not text.strip():
-        return None
 
-    sequence = tokenizer.texts_to_sequences([text])
-    padded = pad_sequences(sequence, maxlen=MAX_LEN)
+# 3️⃣ prediction function (IMPORTANT — define before UI)
+def predict(text):
+    seq = tokenizer.texts_to_sequences([text])
+    pad = pad_sequences(seq, maxlen=max_len)
 
-    prediction = model.predict(padded)
+    probs = model.predict(pad)[0]
+    idx = probs.argmax()
 
-    # 🔎 DEBUG — show what model outputs
-    st.write("Prediction probabilities:", prediction)
-    st.write("Predicted index:", np.argmax(prediction))
+    emotion = label_encoder.inverse_transform([idx])[0]
+    confidence = float(probs[idx])
 
-    return emotion_labels[np.argmax(prediction)]
+    return emotion, confidence
 
-# ---------- UI ----------
-st.title("Emotion Classification using CNN")
 
-user_input = st.text_area("Enter text:")
+# 4️⃣ 👉 YOUR UI CODE GOES HERE (the code you pasted)
+st.title("Patient Emotion Monitoring System")
+st.caption("Detect emotional state from patient or clinical text")
 
-if st.button("Classify Emotion"):
-    result = predict_emotion(user_input)
+text = st.text_area("Enter patient statement / nurse note")
 
-    if result is None:
-        st.warning("Please enter text")
-    else:
-        st.success(f"Predicted Emotion: {result}")
+if st.button("Analyze Emotional State"):
+
+    emotion, confidence = predict(text)
+
+    st.subheader("Detected Emotion")
+    st.success(emotion)
+
+    st.write(f"Confidence: {confidence:.2f}")
+
+    clinical_map = {
+        "fear": "Anxiety / Pre-procedure fear",
+        "sadness": "Emotional distress",
+        "anger": "Frustration or pain distress",
+        "joy": "Positive recovery indicator",
+        "love": "Gratitude / positive staff interaction",
+        "surprise": "Unexpected reaction — review context"
+    }
+
+    st.subheader("Clinical Interpretation")
+    st.info(clinical_map.get(emotion))
+
+    if emotion in ["fear", "sadness", "anger"] and confidence > 0.75:
+        st.error("⚠️ Possible emotional distress — consider follow-up")
+
+st.warning("This AI supports clinicians and does not replace professional judgement.")
+
 
