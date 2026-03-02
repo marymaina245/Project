@@ -8,7 +8,6 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 # 2️⃣ load model + tokenizer (top of file)
 model = load_model("emotion_cnn_model.keras")
 tokenizer = pickle.load(open("tokenizer.pkl", "rb"))
-label_encoder = pickle.load(open("label_encoder.pkl", "rb"))
 
 max_len = 100   # same value used in training
 
@@ -58,6 +57,7 @@ if st.button("Analyze Emotional State"):
         st.error("⚠️ Possible emotional distress — consider follow-up")
 
 st.warning("This AI supports clinicians and does not replace professional judgement.")
+
 
 
 
