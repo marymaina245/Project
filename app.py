@@ -10,6 +10,7 @@ model = load_model("emotion_cnn_model.keras")
 tokenizer = pickle.load(open("tokenizer.pkl", "rb"))
 
 max_len = 100   # same value used in training
+
 labels = ["anger", "fear", "joy", "love", "sadness", "surprise"]
 
 # 3️⃣ prediction function (IMPORTANT — define before UI)
@@ -57,6 +58,7 @@ if st.button("Analyze Emotional State"):
         st.error("⚠️ Possible emotional distress — consider follow-up")
 
 st.warning("This AI supports clinicians and does not replace professional judgement.")
+
 
 
 
